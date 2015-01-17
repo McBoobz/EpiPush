@@ -1,0 +1,73 @@
+#!/bin/sh
+
+if [ "$#" -lt 1 ] || [ "$1" == "help" ] ;then
+    echo "Usage: push [ push <message>
+            | create <login> <repo_name> <acl_name>
+            | clone <login> <path>
+            | pull
+            | help ]"
+    exit 42
+fi
+
+echo "|--- PUSH.SH ---|"
+if [ "$1" == "push" ];then
+    if [ "$2" != "" ];then
+	echo "|    git add    |"
+	git add -A
+	echo "|    commit     |"
+	git commit -m "\"$1\""
+	echo "|    git pull   |"
+	git pull
+	if [ "$?" -eq 1 ];then
+	    exit 42
+	fi
+	echo "|    git push   |"
+	git push
+	if [ "$?" -eq 1 ];then
+	    git push origin master
+	    if [ "$?" -eq 1];then
+		echo ""
+		echo "Check if your folder isn't empty/Ask a friend for help !"
+	    fi
+	fi
+	echo "|---------------|"
+    else
+	echo ""
+	echo "./push.sh push <commit message>"
+	echo ""
+	echo "|---------------|"
+    fi
+    exit 42
+elif [ "$1" == "create" ];then
+    if [ "$2" != "" ] && [ "$3" != "" ] && [ "$4" != "" ];then
+	echo "| Repo $3 create |"
+	blih -u "$2" repository create "$3"
+	if [ "$?" -eq 1 ];then
+	    exit 42
+	fi
+	echo "| setacl to $4 |"
+	blih -u "$2" repository setacl "$3" "$4" r
+	echo "|---------------|"
+    else
+	echo ""
+	echo "./push.sh create <login> <repository name> <acl rights>"
+	echo ""
+	echo "|---------------|"
+    fi
+    exit 42
+elif [ "$1" == "clone" ];then
+    if [ "$2" != "" ] && [ "$3" != "" ];then
+	echo "|   git clone   |"
+	git clone "$2"@git.epitech.eu:"$3"
+	echo "|---------------|"
+    else
+	echo ""
+	echo "./push.sh clone <login> <path to repository: /login_x/repo>"
+	echo ""
+	echo "|---------------|"
+    fi
+    exit 42
+elif [ "$1" == "pull" ];then
+    git pull
+    exit 42
+fi
